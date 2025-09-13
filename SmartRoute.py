@@ -37,6 +37,7 @@ import math
 # Set your OpenRouteService API key here
 ORS_API_KEY = "YOUR_OPENROUTESERVICE_API_KEY"
 
+#
 def geocode_address(address):
     url = "https://nominatim.openstreetmap.org/search"
     params = {"q": address, "format": "json"}
@@ -50,6 +51,7 @@ def geocode_address(address):
         print(f"Geocoding error: {e}")
     return None
 
+#
 def get_route_coords(start, end):
     url = "https://api.openrouteservice.org/v2/directions/driving-car"
     headers = {'Authorization': ORS_API_KEY}
@@ -67,6 +69,7 @@ def get_route_coords(start, end):
         print(f"OpenRouteService error: {resp.text}")
         return [start, end]
 
+#
 def get_gas_stations_along_route(route_coords, buffer_km=2):
     # For demo: sample every 10th point along the route for querying Overpass (to stay within API limits)
     sample_points = route_coords[::max(1, len(route_coords)//10)]
@@ -97,6 +100,7 @@ def get_gas_stations_along_route(route_coords, buffer_km=2):
     unique = {(s["lat"], s["lon"]): s for s in stations}
     return list(unique.values())
 
+#
 def get_state_from_coords(lat, lon):
     # Reverse geocode to get state
     url = "https://nominatim.openstreetmap.org/reverse"
@@ -110,6 +114,7 @@ def get_state_from_coords(lat, lon):
         print(f"Reverse geocode error: {e}")
         return ""
 
+#
 def scrape_aaa_gas_price(state):
     # Scrape https://gasprices.aaa.com/state-gas-price-averages/
     url = "https://gasprices.aaa.com/state-gas-price-averages/"
@@ -126,6 +131,7 @@ def scrape_aaa_gas_price(state):
         print(f"AAA scrape error: {e}")
     return None
 
+#
 def midpoint(coords):
     # Returns the geographic midpoint as (lat, lon)
     if not coords:
@@ -153,6 +159,7 @@ def bounding_box(coords):
     lons = [lon for lat, lon in coords]
     return min(lats), min(lons), max(lats), max(lons)
 
+#
 def optimal_zoom(min_lat, min_lon, max_lat, max_lon, map_width_px=800, map_height_px=600):
     # This is a rough approximation for OpenStreetMap Web Mercator
     WORLD_DIM = {"height": 256, "width": 256}
@@ -192,6 +199,7 @@ class RouteLineLayer(MapLayer):
                 Color(0, 0, 1, 1)  # Blue
                 Line(points=points, width=2)
 
+#
 class LocationInput(BoxLayout):
     def __init__(self, label_text, on_location_selected, **kwargs):
         super().__init__(orientation="vertical", **kwargs)
@@ -251,6 +259,7 @@ class LocationInput(BoxLayout):
         else:
             self.label.text = "Please choose a location method."
 
+#
 class SmartRouteRoot(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation="vertical", **kwargs)
