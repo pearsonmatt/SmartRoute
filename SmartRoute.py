@@ -1,20 +1,20 @@
 """
-cheapgas.py
+SmartRoute.py
 
 Second Project:
 App for finding Cheap gas on route, needs better name.
 
-Name Options: 
+→Name Options: 
 SmartRoute - built with this name for now.
-QuickTrip
-FuelPath
-RouteSaver
-TripWise
-GasGuru: Route & Save
-PathPilot
-(basic brainstorming, some are obvious so may be taken)
 
-Also need to update the Privacy Policy & sample data schema
+→Current Tasks:
+1. Expanding # notation throughout code to reinforce Python learning.
+2. Fix the UI since it's still showing longitude after I switched to using Address and it's not selectable. 
+    ♦ Maybe limit to start/destination fields, condense at the top and make the map area more square instead of the current rectangular shape. 
+3. Fix the Map UI since it's not centering correctly and otherwise displays awkwardly. 
+
+→Currently the Route is a straight line "as the bird flies" type. 
+Once the above tasks are complete, I'll look into mapping it by actual road. 
 """
 
 #Importing kivy since it should make this usable for both 
