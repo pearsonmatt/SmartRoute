@@ -8,7 +8,8 @@ App for finding Cheap gas on route, needs better name.
 SmartRoute - built with this name for now.
 
 →Current Tasks:
-1. Expanding # notation throughout code to reinforce Python learning.
+1. Expanding # notation throughout code to reinforce Python learning. 
+    •(Complete)
 2. Fix the UI since it's still showing longitude after I switched to using Address and it's not selectable. 
     ♦ Maybe limit to start/destination fields, condense at the top and make the map area more square instead of the current rectangular shape. 
 3. Fix the Map UI since it's not centering correctly and otherwise displays awkwardly. 
@@ -17,8 +18,7 @@ SmartRoute - built with this name for now.
 Once the above tasks are complete, I'll look into mapping it by actual road. 
 """
 
-#Importing kivy since it should make this usable for both 
-#computer program and android app. 
+#Importing kivy since it should make this usable for both computer program and android app. 
 import kivy
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -34,10 +34,10 @@ from bs4 import BeautifulSoup
 import threading
 import math
 
-# Set your OpenRouteService API key here
-ORS_API_KEY = "YOUR_OPENROUTESERVICE_API_KEY"
+# Set your OpenRouteService API key here: 
+ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjcxZWE0YWVhN2RlMjQ4MWM5ZTM2OTNmNzg3OGZjMDY3IiwiaCI6Im11cm11cjY0In0="
 
-#
+#This code defines function geocode_address, that takes an address string as input (from the LocationInput class get_location method) and queries the OpenStreetMap Nominatim API to obtain geocoding information. It sends the address as a query parameter and expects a JSON response. If a result is found, it extracts and returns the latitude and longitude as floats. If there is an error or no result, it returns None.
 def geocode_address(address):
     url = "https://nominatim.openstreetmap.org/search"
     params = {"q": address, "format": "json"}
@@ -51,7 +51,8 @@ def geocode_address(address):
         print(f"Geocoding error: {e}")
     return None
 
-#
+# This function calls the OpenRouteService API to fetch a driving route between two coordinates. 
+# It extracts the list of route coordinates and converts them from [lon, lat] to [lat, lon].
 def get_route_coords(start, end):
     url = "https://api.openrouteservice.org/v2/directions/driving-car"
     headers = {'Authorization': ORS_API_KEY}
@@ -69,7 +70,7 @@ def get_route_coords(start, end):
         print(f"OpenRouteService error: {resp.text}")
         return [start, end]
 
-#
+# This function queries the Overpass API to find gas stations along the route, within a specified buffer distance
 def get_gas_stations_along_route(route_coords, buffer_km=2):
     # For demo: sample every 10th point along the route for querying Overpass (to stay within API limits)
     sample_points = route_coords[::max(1, len(route_coords)//10)]
@@ -100,7 +101,7 @@ def get_gas_stations_along_route(route_coords, buffer_km=2):
     unique = {(s["lat"], s["lon"]): s for s in stations}
     return list(unique.values())
 
-#
+# This function reverse-geocodes latitude/longitude into a state name using Nominatim.
 def get_state_from_coords(lat, lon):
     # Reverse geocode to get state
     url = "https://nominatim.openstreetmap.org/reverse"
@@ -114,7 +115,8 @@ def get_state_from_coords(lat, lon):
         print(f"Reverse geocode error: {e}")
         return ""
 
-#
+# This function scrapes the AAA gas prices website to get the average gas price for a given state.
+# Doesn't seem to work yet, issue with the get_state function or this one?
 def scrape_aaa_gas_price(state):
     # Scrape https://gasprices.aaa.com/state-gas-price-averages/
     url = "https://gasprices.aaa.com/state-gas-price-averages/"
@@ -131,7 +133,7 @@ def scrape_aaa_gas_price(state):
         print(f"AAA scrape error: {e}")
     return None
 
-#
+## This function calculates the geographic midpoint of a list of coordinates.
 def midpoint(coords):
     # Returns the geographic midpoint as (lat, lon)
     if not coords:
@@ -153,13 +155,14 @@ def midpoint(coords):
     lat_mid = math.atan2(z, hyp)
     return math.degrees(lat_mid), math.degrees(lon_mid)
 
+# This function returns the bounding box (min/max latitude/longitude) for a set of coordinates.
 def bounding_box(coords):
     """Returns (min_lat, min_lon, max_lat, max_lon) of the list of (lat, lon)"""
     lats = [lat for lat, lon in coords]
     lons = [lon for lat, lon in coords]
     return min(lats), min(lons), max(lats), max(lons)
 
-#
+## This function estimates an appropriate zoom level for displaying coordinates on an OpenStreetMap-based map.
 def optimal_zoom(min_lat, min_lon, max_lat, max_lon, map_width_px=800, map_height_px=600):
     # This is a rough approximation for OpenStreetMap Web Mercator
     WORLD_DIM = {"height": 256, "width": 256}
@@ -179,7 +182,9 @@ def optimal_zoom(min_lat, min_lon, max_lat, max_lon, map_width_px=800, map_heigh
     lon_zoom = zoom(map_width_px, WORLD_DIM["width"], lon_fraction)
     return min(lat_zoom, lon_zoom, ZOOM_MAX)
 
-# Route polyline layer for MapView
+
+# Route polyline layer for MapView 
+# This class defines a custom MapLayer to draw a route polyline on the map.
 class RouteLineLayer(MapLayer):
     def __init__(self, route_coords, **kwargs):
         super().__init__(**kwargs)
@@ -199,7 +204,8 @@ class RouteLineLayer(MapLayer):
                 Color(0, 0, 1, 1)  # Blue
                 Line(points=points, width=2)
 
-#
+
+## This class defines a widget for user input of start and end locations (address or coordinates).
 class LocationInput(BoxLayout):
     def __init__(self, label_text, on_location_selected, **kwargs):
         super().__init__(orientation="vertical", **kwargs)
@@ -221,6 +227,7 @@ class LocationInput(BoxLayout):
         self.input1.disabled = False
         self.input2.disabled = True
 
+# Updates the input fields depending on whether user selects address or coordinates.
     def update_input_fields(self, spinner, text):
         if text == "Enter Address":
             self.input1.hint_text = "Enter address"
@@ -235,6 +242,7 @@ class LocationInput(BoxLayout):
             self.input1.disabled = False
             self.input2.disabled = False
 
+# Handles the user’s input and passes back a (lat, lon) tuple if valid.
     def get_location(self, instance):
         method = self.spinner.text
         if method == "Enter Address":
@@ -259,7 +267,8 @@ class LocationInput(BoxLayout):
         else:
             self.label.text = "Please choose a location method."
 
-#
+
+## This class defines the main layout and logic of the app, handling inputs, route processing, and map updates.
 class SmartRouteRoot(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(orientation="vertical", **kwargs)
@@ -284,14 +293,17 @@ class SmartRouteRoot(BoxLayout):
         self.status_label = Label(text="", size_hint_y=None, height=30)
         self.add_widget(self.status_label)
 
+# Stores user-defined start location.
     def set_start_location(self, latlon):
         self.start_location = latlon
         self.status_label.text = f"Start set: {latlon}"
 
+# Stores user-defined end location.
     def set_end_location(self, latlon):
         self.end_location = latlon
         self.status_label.text = f"End set: {latlon}"
 
+# Runs the background thread for fetching route, gas stations, and gas prices.
     def process_route(self, instance):
         if self.start_location and self.end_location:
             self.status_label.text = "Getting route, gas stations, and average price..."
@@ -299,6 +311,7 @@ class SmartRouteRoot(BoxLayout):
         else:
             self.status_label.text = "Please set both start and end locations."
 
+# Background function: fetch route, reverse geocode, scrape AAA, and query gas stations.
     def background_process(self):
         try:
             # 1. Get route
@@ -314,9 +327,11 @@ class SmartRouteRoot(BoxLayout):
         except Exception as e:
             Clock.schedule_once(lambda dt: self.show_error(str(e)))
 
+# Updates status label with errors if any occur.
     def show_error(self, msg):
         self.status_label.text = f"Error: {msg}"
 
+# Displays the calculated route, markers, and gas stations on the map.
     def display_results(self):
         # Remove old markers
         for marker in self.map_markers:
@@ -355,10 +370,11 @@ class SmartRouteRoot(BoxLayout):
             if self.avg_price else
             "Stations shown (price not available)."
         )
-
+# The Kivy App class that launches the SmartRouteRoot interface.
 class SmartRouteApp(App):
     def build(self):
         return SmartRouteRoot()
 
+# Entry point of the application.
 if __name__ == "__main__":
     SmartRouteApp().run()
